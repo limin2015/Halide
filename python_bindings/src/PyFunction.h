@@ -6,7 +6,7 @@
 namespace Halide {
 namespace PythonBindings {
 
-void define_extern_func_argument();
+void define_extern_func_argument(py::module &m);
 
 }  // namespace PythonBindings
 }  // namespace Halide

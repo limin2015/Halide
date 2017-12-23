@@ -3,18 +3,17 @@
 namespace Halide {
 namespace PythonBindings {
 
-void define_var_or_rvar() {
-    py::class_<VarOrRVar>("VarOrRVar",
-                         "A class that can represent Vars or RVars. "
-                         "Used for reorder calls which can accept a mix of either.",
-                         py::init<std::string, bool>(py::args("self", "n", "r")))
-        .def(py::init<Var>(py::args("self", "v")))
-        .def(py::init<RVar>(py::args("self", "r")))
-        .def(py::init<RDom>(py::args("self", "r")))
-        .def("name", &VarOrRVar::name, py::arg("self"), py::return_value_policy<py::copy_const_reference>())
-        .def_readonly("var", &VarOrRVar::var)
-        .def_readonly("rvar", &VarOrRVar::rvar)
-        .def_readonly("is_rvar", &VarOrRVar::is_rvar);
+void define_var_or_rvar(py::module &m) {
+    py::class_<VarOrRVar>(m, "VarOrRVar")
+    .def(py::init<std::string, bool>())
+    .def(py::init<Var>())
+    .def(py::init<RVar>())
+    .def(py::init<RDom>())
+    .def("name", &VarOrRVar::name)
+    .def_readonly("var", &VarOrRVar::var)
+    .def_readonly("rvar", &VarOrRVar::rvar)
+    .def_readonly("is_rvar", &VarOrRVar::is_rvar)
+    ;
 
     py::implicitly_convertible<Var, VarOrRVar>();
     py::implicitly_convertible<RVar, VarOrRVar>();

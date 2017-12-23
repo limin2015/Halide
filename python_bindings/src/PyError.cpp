@@ -25,15 +25,9 @@ public:
     }
 };
 
-void translate_error(Error const &e) {
-    PyErr_SetString(PyExc_RuntimeError, e.what());
-}
-
 }  // namespace
 
-void define_error() {
-    py::register_exception_translator<Error>(&translate_error);
-
+void define_error(py::module &m) {
     static HalidePythonCompileTimeErrorReporter reporter;
     set_custom_compile_time_error_reporter(&reporter);
 

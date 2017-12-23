@@ -20,7 +20,6 @@ def _redirect_stdout(out):
         sys.stdout = old_out
 
 def test_compiletime_error():
-
     x = hl.Var('x')
     y = hl.Var('y')
     f = hl.Func('f')
@@ -30,12 +29,11 @@ def test_compiletime_error():
     try:
         f.realize(buf)
     except RuntimeError as e:
-        print('Saw expected exception (%s)' % str(e))
+        assert 'Buffer has type uint8, but Func "f" has type uint16.' in str(e)
     else:
         assert False, 'Did not see expected exception!'
 
 def test_runtime_error():
-
     x = hl.Var('x')
     f = hl.Func('f')
     f[x] = hl.cast(hl.UInt(8), x)
@@ -45,7 +43,7 @@ def test_runtime_error():
     try:
         f.realize(buf)
     except RuntimeError as e:
-        print('Saw expected exception (%s)' % str(e))
+        assert 'do not cover required region' in str(e)
     else:
         assert False, 'Did not see expected exception!'
 
@@ -66,7 +64,6 @@ def test_print_expr():
     return
 
 def test_print_when():
-
     x = hl.Var('x')
     f = hl.Func('f')
     f[x] = hl.print_when(x == 3, hl.cast(hl.UInt(8), x*x), 'is result at', x)
@@ -77,20 +74,6 @@ def test_print_when():
         expected = '9 is result at 3\n'
         actual = output.getvalue()
         assert expected == actual, "Expected: %s, Actual: %s" % (expected, actual)
-
-    return
-
-def test_types():
-
-    t0 = hl.Int(32)
-    t1 = hl.Int(16)
-
-    assert t0 != t1
-    assert t0.is_float() == False
-    assert t1.is_float() == False
-
-    print("hl.Int(32) type:", hl.Int(32))
-    print("hl.Int(16) type:", hl.Int(16))
 
     return
 
@@ -105,14 +88,12 @@ def test_basics():
 
     yy = hl.cast(hl.Int(32), 1)
     assert yy.type() == hl.Int(32)
-    print("yy type:", yy.type())
 
     z = x + 1
     input[x,y]
     input[0,0]
     input[z,y]
     input[x+1,y]
-    print("ping 0.2")
     input[x,y]+input[x+1,y]
 
     if False:
@@ -121,30 +102,18 @@ def test_basics():
         aa + bb
         blur_x[x,y]+blur_x[x,y+1]
 
-    print("ping 0.3")
     (input[x,y]+input[x+1,y]) / 2
-    print("ping 0.4")
     blur_x[x,y]
-    print("ping 0.4.1")
     blur_xx[x,y] = input[x,y]
 
-
-
-    print("ping 0.5")
     blur_x[x,y] = (input[x,y]+input[x+1,y]+input[x+2,y])/3
-    print("ping 1")
     blur_y[x,y] = (blur_x[x,y]+blur_x[x,y+1]+blur_x[x,y+2])/3
 
     xi, yi = hl.Var('xi'), hl.Var('yi')
-    print("ping 2")
     blur_y.tile(x, y, xi, yi, 8, 4).parallel(y).vectorize(xi, 8)
     blur_x.compute_at(blur_y, x).vectorize(x, 8)
-
-
     blur_y.compile_jit()
-    print("Compiled to jit")
 
-    return
 
 def test_basics2():
 
@@ -213,48 +182,47 @@ def test_basics3():
 
 
 def test_float_or_int():
-
     x = hl.Var('x')
-    i, f =  hl.Int(32), hl.Float(32)
+    i32, f32 =  hl.Int(32), hl.Float(32)
 
-    assert ((x//2) - 1 + 2*(x%2)).type() == i
-    assert ((x/2) - 1 + 2*(x%2)).type() == i
-    assert ((x/2)).type() == i
-    assert ((x/2.0)).type() == f
-    assert ((x//2)).type() == i
-    assert ((x//2) - 1).type() == i
-    assert ((x%2)).type() == i
-    assert (2*(x%2)).type() == i
-    assert ((x//2) - 1 + 2*(x%2)).type() == i
+    assert hl.Expr(x).type() == i32
+    assert (x*2).type() == i32
+    assert (x/2).type() == i32
+    assert ((x//2) - 1 + 2*(x%2)).type() == i32
+    assert ((x/2) - 1 + 2*(x%2)).type() == i32
+    assert ((x/2)).type() == i32
+    assert ((x/2.0)).type() == f32
+    assert ((x//2)).type() == i32
+    assert ((x//2) - 1).type() == i32
+    assert ((x%2)).type() == i32
+    assert (2*(x%2)).type() == i32
+    assert ((x//2) - 1 + 2*(x%2)).type() == i32
 
     assert type(x) == hl.Var
-    assert (x.as_expr()).type() == i
-    assert (hl.Expr(2.0)).type() == f
-    assert (hl.Expr(2)).type() == i
-    assert (x + 2).type() == i
-    assert (2 + x).type() == i
-    assert (hl.Expr(2) + hl.Expr(3)).type() == i
-    assert (hl.Expr(2.0) + hl.Expr(3)).type() == f
-    assert (hl.Expr(2) + 3.0).type() == f
-    assert (hl.Expr(2) + 3).type() == i
-    assert (x.as_expr() + 2).type() == i # yes this failed at some point
-    assert (2 + x.as_expr()).type() == i
-    assert (2 * (x + 2)).type() == i # yes this failed at some point
-    assert (x + 0).type() == i
-    assert (x % 2).type() == i
-    assert (2 * x).type() == i
-    assert (x * 2).type() == i
-    assert (x * 2).type() == i
-    assert ((x % 2)).type() == i
-    assert ((x % 2) * 2).type() == i
-    #assert (2 * (x % 2)).type() == i # yes this failed at some point
-    assert ((x + 2) * 2).type() == i
-
-    return
+    assert (hl.Expr(x)).type() == i32
+    assert (hl.Expr(2.0)).type() == f32
+    assert (hl.Expr(2)).type() == i32
+    assert (x + 2).type() == i32
+    assert (2 + x).type() == i32
+    assert (hl.Expr(2) + hl.Expr(3)).type() == i32
+    assert (hl.Expr(2.0) + hl.Expr(3)).type() == f32
+    assert (hl.Expr(2) + 3.0).type() == f32
+    assert (hl.Expr(2) + 3).type() == i32
+    assert (hl.Expr(x) + 2).type() == i32
+    assert (2 + hl.Expr(x)).type() == i32
+    assert (2 * (x + 2)).type() == i32
+    assert (x + 0).type() == i32
+    assert (x % 2).type() == i32
+    assert (2 * x).type() == i32
+    assert (x * 2).type() == i32
+    assert (x * 2).type() == i32
+    assert ((x % 2)).type() == i32
+    assert ((x % 2) * 2).type() == i32
+    assert (2 * (x % 2)).type() == i32
+    assert ((x + 2) * 2).type() == i32
 
 
 def test_operator_order():
-
     x = hl.Var('x')
     f = hl.Func('f')
     x + 1
@@ -264,8 +232,6 @@ def test_operator_order():
     f[x] + 1
     hl.Expr(1) + f[x]
     1 + f[x]
-
-    return
 
 def test_ndarray_to_image():
 
@@ -316,39 +282,15 @@ def test_image_to_ndarray():
 
     return
 
-def test_param_bug():
-    "see https://github.com/rodrigob/Halide/issues/1"
-
-    p1 = hl.Param(hl.UInt(8), "p1", 0)
-    p2 = hl.Param(hl.UInt(8), "p2")
-    p3 = hl.Param(hl.UInt(8), 42)
-
-    return
-
-def test_imageparam_bug():
-    "see https://github.com/rodrigob/Halide/issues/2"
-
-    x = hl.Var("x")
-    y = hl.Var("y")
-    fx = hl.Func("fx")
-    input = hl.ImageParam(hl.UInt(8), 1, "input")
-    fx[x, y] = input[y]
-
-    return
-
 if __name__ == "__main__":
-
     test_compiletime_error()
     test_runtime_error()
     test_print_expr()
     test_print_when()
-    test_imageparam_bug()
-    test_param_bug()
     test_float_or_int()
-    test_ndarray_to_image()
-    test_image_to_ndarray()
-    test_types()
     test_operator_order()
     test_basics()
     test_basics2()
-    test_basics3()
+    # test_basics3()
+    # test_ndarray_to_image()
+    # test_image_to_ndarray()

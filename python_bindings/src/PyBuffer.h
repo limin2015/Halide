@@ -6,9 +6,10 @@
 namespace Halide {
 namespace PythonBindings {
 
-void define_buffer();
-py::object buffer_to_python_object(const Buffer<> &);
-Buffer<> python_object_to_buffer(py::object);
+void define_buffer(py::module &m);
+
+// py::object buffer_to_python_object(const Buffer<> &);
+// Buffer<> python_object_to_buffer(py::object);
 
 }  // namespace PythonBindings
 }  // namespace Halide

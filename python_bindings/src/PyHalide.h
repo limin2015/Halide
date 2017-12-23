@@ -1,16 +1,13 @@
 #ifndef HALIDE_PYTHON_BINDINGS_PYHALIDE_H
 #define HALIDE_PYTHON_BINDINGS_PYHALIDE_H
 
-// Include all Boost.Python headers here
-#include <boost/python.hpp>
-#include <boost/python/operators.hpp>
-#include <boost/python/raw_function.hpp>
-#include <boost/python/self.hpp>
-#include <boost/python/stl_iterator.hpp>
-#include <boost/python/tuple.hpp>
+#undef NDEBUG
+
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
 
 // Some very-commonly-used headers here, to simplify things.
-// (<string> must come after the boost headers in some configs.)
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,7 +18,7 @@
 namespace Halide {
 namespace PythonBindings {
 
-namespace py = boost::python;
+namespace py = pybind11;
 
 }  // namespace PythonBindings
 }  // namespace Halide
