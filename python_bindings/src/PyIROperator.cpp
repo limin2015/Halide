@@ -88,6 +88,7 @@ void define_operators(py::module &m) {
     m.def("clamp", &clamp);
     m.def("abs", &abs);
     m.def("absd", &absd);
+    // TODO: improve me
     m.def("select", &select0);
     m.def("select", &select1);
     m.def("select", &select2);

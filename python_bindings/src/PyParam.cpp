@@ -43,6 +43,8 @@ void define_image_param(py::module &m) {
         .def("__getitem__", [](ImageParam &im, const std::vector<Expr> &args) -> Expr {
             return im(args);
         })
+        .def("width", &ImageParam::width)
+        .def("height", &ImageParam::height)
 
         // .def("dimensions", &ImageParam::dimensions)
         // .def("channels", &ImageParam::channels, ,
@@ -534,31 +536,35 @@ void define_output_image_param() {
 // };
 
 void define_param(py::module &m) {
-    const Type type = type_of<T>();
-    const std::string suffix = halide_type_to_string(type);
     auto param_class =
-        py::class_<Internal::Parameter>(m, "Param")
-        .def(py::init<>())
-        .def(py::init<std::string>())
-        .def(py::init<T>())
-        .def(py::init<std::string, T>())
-        .def(py::init<T, Expr, Expr>())
-        .def(py::init<std::string, T, Expr, Expr>())
-        .def("name", &Param<T>::name)
-        .def("get", &Param<T>::get)
-        .def("set", &Param<T>::set)
-        .def("type", &Param<T>::type)
-        .def("set_range", &Param<T>::set_range)
-        .def("set_min_value", &Param<T>::set_min_value)
-        .def("set_max_value", &Param<T>::set_max_value)
-        .def("min_value", &Param<T>::min_value)
-        .def("max_value", &Param<T>::max_value)
-        .def("set_estimate", &Param<T>::set_estimate)
+        py::class_<Param<>>(m, "Param")
+        .def(py::init<Type>(), py::arg("type"))
+        .def(py::init<Type, std::string>(), py::arg("type"), py::arg("name"))
+        .def(py::init([](Type type, std::string name, float value) {
+            Param<> p(type, name);
+            p.set<float>(value);
+            return p;
+        }), py::arg("type"), py::arg("name"), py::arg("value"))
+// TODO missing from C++ api
+//        .def(py::init<Type, Expr, Expr>(), py::arg("type"), py::arg("min"), py::arg("max"))
+//        .def(py::init<Type, std::string, Expr, Expr>(), py::arg("type"), py::arg("name"), py::arg("min"), py::arg("max"))
+        .def("name", &Param<>::name)
+//        .def("get", &Param<>::get)
+        .def("set", [](Param<> &param, uint8_t value) -> void {
+            param.set<uint8_t>(value);
+        }, py::arg("value"))
+        .def("type", &Param<>::type)
+        // .def("set_range", &Param<>::set_range)
+        // .def("set_min_value", &Param<>::set_min_value)
+        // .def("set_max_value", &Param<>::set_max_value)
+        // .def("min_value", &Param<>::min_value)
+        // .def("max_value", &Param<>::max_value)
+//        .def("set_estimate", &Param<>::set_estimate)
         // .def("as_expr", (Expr (Param<T>::*)()) &Var::operator Expr)
         // .def("as_ExternFuncArgument", (ExternFuncArgument (Param<T>::*)()) &Var::operator ExternFuncArgument)
         // .def("as_Argument", (Argument (Param<T>::*)()) &Var::operator Argument)
 
-        .def("__repr__", [](const Param<T> &param) -> std::string {
+        .def("__repr__", [](const Param<> &param) -> std::string {
             std::ostringstream o;
             o << "<halide.Param '" << param.name() << "'"
               << " type " << halide_type_to_string(param.type()) << ">";
@@ -568,53 +574,11 @@ void define_param(py::module &m) {
 
     //py::implicitly_convertible<Param<T>, Argument>();
     //py::implicitly_convertible<Param<T>, ExternFuncArgument>();
-    py::implicitly_convertible<Param<T>, Expr>();
+    py::implicitly_convertible<Param<>, Expr>();
 
     add_binary_operators(param_class);
 
-    // define_param_impl<bool>(m);
-    // define_param_impl<uint8_t>(m);
-    // define_param_impl<uint16_t>(m);
-    // define_param_impl<uint32_t>(m);
-    // define_param_impl<uint64_t>(m);
-    // define_param_impl<int8_t>(m);
-    // define_param_impl<int16_t>(m);
-    // define_param_impl<int32_t>(m);
-    // define_param_impl<int64_t>(m);
-    // define_param_impl<float>(m);
-    // define_param_impl<double>(m);
-
-    // // "Param" will look like a class, but instead it will be simply a factory method
-    // m.def("Param", [&m](py::args args) -> py::object {
-    //     Type t = args[0].cast<Type>();
-    //     //args = py::slice(args, 1, py::_);
-    //     std::string classname = "_Param_" + halide_type_to_string(t);
-    //     return py::globals()[classname](args);
-    // });
-
-    // Order of definitions matter, the last defined method is attempted first
-    // Here it is important to try "type, name" before "type, val"
-    // py::def("Param", &ParamFactory::create_param5, py::args("type", "name", "val", "min", "max"),
-    //        "Construct a scalar parameter of type T with the given name "
-    //        "and an initial value of 'val' and a given min and max.");
-    // py::def("Param", &ParamFactory::create_param4, py::args("type", "val", "min", "max"),
-    //        "Construct a scalar parameter of type T with an initial value of 'val' "
-    //        "and a given min and max.");
-    // py::def("Param", &ParamFactory::create_param3, py::args("type", "name", "val"),
-    //        "Construct a scalar parameter of type T with the given name "
-    //        "and an initial value of 'val'.");
-    // py::def("Param", &ParamFactory::create_param2, py::args("type", "val"),
-    //        "Construct a scalar parameter of type T an initial value of "
-    //        "'val'. Only triggers for scalar types.");
-    // py::def("Param", &ParamFactory::create_param1, py::args("type", "name"),
-    //        "Construct a scalar parameter of type T with the given name.");
-    // py::def("Param", &ParamFactory::create_param0, py::args("type"),
-    //        "Construct a scalar parameter of type T with a unique auto-generated name");
-
-    // py::def("user_context_value", &user_context_value,
-    //        "Returns an Expr corresponding to the user context passed to "
-    //        "the function (if any). It is rare that this function is necessary "
-    //        "(e.g. to pass the user context to an extern function written in C).");
+    m.def("user_context_value", &user_context_value);
 
     define_image_param(m);
     // define_output_image_param();
