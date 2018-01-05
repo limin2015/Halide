@@ -12,7 +12,7 @@ void add_binary_operators_with(PythonClass &class_instance) {
 
 #define BINARY_OP(op, method) \
     .def("__" #method "__", [](const self_t &self, const other_t &other) -> decltype(self op other) { return self op other; }, py::is_operator()) \
-    .def("__r" #method "__", [](const self_t &self, const other_t &other) -> decltype(self op other) { return self op other; }, py::is_operator())
+    .def("__r" #method "__", [](const self_t &self, const other_t &other) -> decltype(self op other) { return other op self; }, py::is_operator())
 
     class_instance
         BINARY_OP(+, add)

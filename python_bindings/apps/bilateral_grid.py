@@ -35,7 +35,9 @@ def get_bilateral_grid(input, r_sigma, s_sigma):
     r = hl.RDom(0, s_sigma, 0, s_sigma, 'r')
     val = clamped[x * s_sigma + r.x - s_sigma // 2, y * s_sigma + r.y - s_sigma // 2]
     val = hl.clamp(val, 0.0, 1.0)
-    zi = hl.cast(int_t, (val / r_sigma) + 0.5)
+
+    zi = hl.cast(int_t, val / r_sigma + 0.5)
+
     histogram = hl.Func('histogram')
     histogram[x, y, z, c] = 0.0
     histogram[x, y, zi, c] += hl.select(c == 0, val, 1.0)
@@ -57,13 +59,13 @@ def get_bilateral_grid(input, r_sigma, s_sigma):
     yi = y / s_sigma
     interpolated = hl.Func('interpolated')
     interpolated[x, y, c] = hl.lerp(hl.lerp(hl.lerp(blury[xi, yi, zi, c], blury[xi+1, yi, zi, c], xf),
-                                      hl.lerp(blury[xi, yi+1, zi, c], blury[xi+1, yi+1, zi, c], xf), yf),
-                                 hl.lerp(hl.lerp(blury[xi, yi, zi+1, c], blury[xi+1, yi, zi+1, c], xf),
-                                      hl.lerp(blury[xi, yi+1, zi+1, c], blury[xi+1, yi+1, zi+1, c], xf), yf), zf)
+                                            hl.lerp(blury[xi, yi+1, zi, c], blury[xi+1, yi+1, zi, c], xf), yf),
+                                    hl.lerp(hl.lerp(blury[xi, yi, zi+1, c], blury[xi+1, yi, zi+1, c], xf),
+                                            hl.lerp(blury[xi, yi+1, zi+1, c], blury[xi+1, yi+1, zi+1, c], xf), yf), zf)
 
     # Normalize
     bilateral_grid = hl.Func('bilateral_grid')
-    bilateral_grid[x, y] = interpolated[x, y, 0]/interpolated[x, y, 1]
+    bilateral_grid[x, y] = interpolated[x, y, 0] / interpolated[x, y, 1]
 
     target = hl.get_target_from_environment()
     if target.has_gpu_feature():
@@ -115,9 +117,8 @@ def get_input_data():
 
     grey_data = np.mean(rgb_data, axis=2, dtype=np.float32)
     input_data = np.copy(grey_data, order="F") / 255.0
-    # input is in [0, 1] range
-    #print("input_data", type(input_data), input_data.shape, input_data.dtype)
 
+    return input_data
 
 def filter_test_image(bilateral_grid, input):
     bilateral_grid.compile_jit()
@@ -151,8 +152,6 @@ def main():
     input = hl.ImageParam(float_t, 2, 'input')
     r_sigma = hl.Param(float_t, 'r_sigma', 0.1) # Value needed if not generating an executable
     s_sigma = 8 # This is passed during code generation in the C++ version
-
-    #print("r_sigma", r_sigma)
 
     bilateral_grid = get_bilateral_grid(input, r_sigma, s_sigma)
 
