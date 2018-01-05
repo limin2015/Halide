@@ -192,12 +192,16 @@ void define_buffer(py::module &m) {
         .def("to_ndarray", &buffer_to_ndarray)
 
         .def("type", &Buffer<>::type)
-        // .def("channels", &Buffer<>::channels)
-        // .def("dimensions", &Buffer<>::dimensions)
-        // .def("width", &Buffer<>::width)
-        // .def("height", &Buffer<>::height)
-        // .def("top", &Buffer<>::top)
-        // .def("bottom", &Buffer<>::bottom)
+        .def("channels", (int (Buffer<>::*)() const) &Buffer<>::channels)
+        .def("dimensions", (int (Buffer<>::*)() const) &Buffer<>::dimensions)
+        .def("width", (int (Buffer<>::*)() const) &Buffer<>::width)
+        .def("height", (int (Buffer<>::*)() const) &Buffer<>::height)
+        .def("top", (int (Buffer<>::*)() const) &Buffer<>::top)
+        .def("bottom", (int (Buffer<>::*)() const) &Buffer<>::bottom)
+
+        // .def("set_min", &Buffer<>::set_min)
+        // .def("set_extent", &Buffer<>::set_extent)
+        // .def("set_stride", &Buffer<>::set_stride)
 
         .def("__getitem__", [](Buffer<> &buf, const int &pos) -> py::object {
             return buffer_getitem_operator(buf, {pos});
@@ -205,6 +209,14 @@ void define_buffer(py::module &m) {
         .def("__getitem__", [](Buffer<> &buf, const std::vector<int> &pos) -> py::object {
             return buffer_getitem_operator(buf, pos);
         })
+
+        .def("__getitem__", [](Buffer<> &buf, const Expr &pos) -> Expr {
+            return buf({pos});
+        })
+        .def("__getitem__", [](Buffer<> &buf, const std::vector<Expr> &pos) -> Expr {
+            return buf(pos);
+        })
+
         .def("__setitem__", [](Buffer<> &buf, const int &pos, py::object value) -> py::object {
             return buffer_setitem_operator(buf, {pos}, value);
         })

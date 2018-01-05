@@ -174,6 +174,10 @@ void define_func(py::module &m) {
 
         .def("update", &Func::update, py::arg("idx") = 0)
 
+        .def("trace_stores", &Func::trace_stores)
+        .def("trace_realizations", &Func::trace_realizations)
+        .def("print_loop_nest", &Func::print_loop_nest)
+
         .def("__repr__", [](const Func &func) -> std::string {
             std::ostringstream o;
             o << "<halide.Func '" << func.name() << "'>";

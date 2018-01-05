@@ -1,3 +1,12 @@
+## PYBIND TODO:
+
+-- auto-convert from Realization -> Buffer isn't really doable. Or is it? 
+-- BoundaryConditions not in a sub-name.
+-- using [] rather than () for Func access. Might be doable, but is it better?
+-- tutorials not working yet
+-- lots of variadic-arg manual code; can we streamline?
+
+
 
 ## Prerequisites ##
 
