@@ -10,8 +10,6 @@ namespace PythonBindings {
 void define_expr(py::module &m) {
     auto expr_class =
         py::class_<Expr>(m, "Expr")
-            // it important to declare int after float, after double.
-//            .def(py::init<const Internal::BaseExprNode *>())
             // PyBind11 searches in declared order,
             // int should be tried before float conversion
             .def(py::init<int>())
@@ -20,6 +18,7 @@ void define_expr(py::module &m) {
             .def(py::init<std::string>())
             .def(py::init([](const Var &v) -> Expr { return v; }))
             .def(py::init([](const FuncRef &f) -> Expr { return f; }))
+            .def(py::init([](const RVar &r) -> Expr { return r; }))
             .def("type", &Expr::type)
             .def("__repr__", [](const Expr &e) -> std::string {
                 std::ostringstream o;

@@ -10,13 +10,13 @@ void halide_python_error(void *, const char *msg) {
 }
 
 void halide_python_print(void *, const char *msg) {
-    PySys_WriteStdout("%s", msg);
+    py::print(msg, py::arg("end") = "");
 }
 
 class HalidePythonCompileTimeErrorReporter : public CompileTimeErrorReporter {
 public:
     void warning(const char* msg) {
-        PySys_WriteStdout("%s", msg);
+        py::print(msg, py::arg("end") = "");
     }
 
     void error(const char* msg) {

@@ -11,7 +11,10 @@ TEST_TMP ?= $(BIN)/tmp
 
 PYBIND11 ?= /Users/srj/GitHub/pybind11
 
-CCFLAGS=$(shell $(PYTHON)-config --cflags) -I $(PYBIND11)/include -I $(HALIDE_DISTRIB_PATH)/include -I $(ROOT_DIR) -std=c++11 -fPIC
+OPTIMIZE ?= -g -DDEBUG=1 -UNDEBUG
+# OPTIMIZE ?= -O3
+
+CCFLAGS=$(shell $(PYTHON)-config --cflags) -I $(PYBIND11)/include -I $(HALIDE_DISTRIB_PATH)/include -I $(ROOT_DIR) -std=c++11 -fPIC $(OPTIMIZE)
 LDFLAGS=$(shell $(PYTHON)-config --ldflags) -lz
 
 PY_SRCS=$(shell ls $(ROOT_DIR)/src/*.cpp)

@@ -1,5 +1,5 @@
-#ifndef HALIDE_PYTHON_BINDINGS_add_binary_operators_H
-#define HALIDE_PYTHON_BINDINGS_add_binary_operators_H
+#ifndef HALIDE_PYTHON_BINDINGS_PYBINARYOPERATORS_H
+#define HALIDE_PYTHON_BINDINGS_PYBINARYOPERATORS_H
 
 #include "PyHalide.h"
 
@@ -77,4 +77,4 @@ void add_binary_operators(PythonClass &class_instance) {
 }  // namespace PythonBindings
 }  // namespace Halide
 
-#endif  // HALIDE_PYTHON_BINDINGS_add_binary_operators_H
+#endif  // HALIDE_PYTHON_BINDINGS_PYBINARYOPERATORS_H
